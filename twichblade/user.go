@@ -7,21 +7,24 @@ import (
 )
 
 type User struct {
-	conn *DbConnection
+	conn     *DbConnection
+	username string
+	password string
 }
 
-func (user *User) NewConnection() {
+func (user *User) NewConnection(username, password string) {
 	user.conn = new(DbConnection)
+	user.username = username
+	user.password = password
 }
 
-func (user *User) UsernameExists(username string) bool {
+func (user *User) UsernameExists() bool {
 	conn, err := user.conn.Connect()
 	if err != nil {
 		log.Fatal(err)
-
 		return true
 	} else {
-		result, _ := conn.Query("select username from users where username = $1", username)
+		result, _ := conn.Query("select username from users where username = $1", user.username)
 		conn.Close()
 		if result.Next() {
 			return true
@@ -30,16 +33,15 @@ func (user *User) UsernameExists(username string) bool {
 		}
 	}
 }
-
-func (user *User) Registration(username, password string) bool {
+func (user *User) Register() bool {
 	conn, err := user.conn.Connect()
 	if err != nil {
 		log.Fatal(err)
 		return false
 	} else {
-		isPresent := user.UsernameExists(username)
+		isPresent := user.UsernameExists()
 		if isPresent == false {
-			_, err := conn.Query("insert into users(username, password) values($1, $2)", username, password)
+			_, err := conn.Query("insert into users(username, password) values($1, $2)", user.username, user.password)
 			conn.Close()
 			if err != nil {
 				return false

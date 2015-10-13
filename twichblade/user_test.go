@@ -6,21 +6,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRegistration(t *testing.T) {
+func TestRegister(t *testing.T) {
 	username := "praveen"
 	password := "password"
 	user := new(User)
-	result := user.Registration(username, password)
+	result := user.Register()
 	assert.Equal(t, true, result)
-	user.NewConnection()
+	user.NewConnection(username, password)
 	conn, _ := user.conn.Connect()
 	conn.Query("delete from users")
 }
 
 func TestUsernameDoesNotExists(t *testing.T) {
 	username := "praveen"
+	password := "password"
 	user := new(User)
-	result := user.UsernameExists(username)
+	user.NewConnection(username, password)
+	result := user.UsernameExists()
 	assert.Equal(t, false, result)
 }
 
@@ -28,11 +30,10 @@ func TestusernameExists(t *testing.T) {
 	username := "praveen"
 	password := "password"
 	user := new(User)
-	user.NewConnection()
+	user.NewConnection(username, password)
 	conn, _ := user.conn.Connect()
 	conn.Query("insert into users (username, password) values($1, $2)", username, password)
-	result := user.UsernameExists(username)
+	result := user.UsernameExists()
 	assert.Equal(t, true, result)
 	conn.Query("delete from users")
-
 }
