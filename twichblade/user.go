@@ -12,7 +12,7 @@ type User struct {
 	password string
 }
 
-func (user *User) NewConnection(username, password string) {
+func (user *User) NewUser(username, password string) {
 	user.conn = new(DbConnection)
 	user.username = username
 	user.password = password
