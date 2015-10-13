@@ -53,3 +53,18 @@ func (user *User) Register() bool {
 		}
 	}
 }
+
+func (user *User) Login() bool {
+	conn, err := user.conn.Connect()
+	if err != nil {
+		log.Fatal(err)
+		return false
+	} else {
+		result, _ := conn.Query("select (username, password) from users where username = $1 and password = $2", user.username, user.password)
+		if result.Next() {
+			return true
+		} else {
+			return false
+		}
+	}
+}

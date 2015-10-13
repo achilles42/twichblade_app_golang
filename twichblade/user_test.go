@@ -37,3 +37,29 @@ func TestusernameExists(t *testing.T) {
 	assert.Equal(t, true, result)
 	conn.Query("delete from users")
 }
+
+func TestLoginForRegistredUser(t *testing.T) {
+	username := "praveen"
+	password := "password"
+	user := new(User)
+	user.NewConnection(username, password)
+	conn, _ := user.conn.Connect()
+	conn.Query("insert into users(username, password) values($1, $2)", username, password)
+	result := user.Login()
+	assert.Equal(t, true, result)
+	conn.Query("delete from users")
+}
+
+func TestLoginForNonRegistredUser(t *testing.T) {
+	username := "praveen"
+	password := "password"
+	username1 := "praveen1"
+	password1 := "password1"
+	user := new(User)
+	user.NewConnection(username, password)
+	conn, _ := user.conn.Connect()
+	conn.Query("insert into users(username, password) values($1, $2)", username1, password1)
+	result := user.Login()
+	assert.Equal(t, false, result)
+	conn.Query("delete from users")
+}
