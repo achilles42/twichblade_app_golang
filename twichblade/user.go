@@ -1,10 +1,6 @@
 package twichblade
 
-import (
-	"log"
-
-	_ "github.com/lib/pq"
-)
+import _ "github.com/lib/pq"
 
 type User struct {
 	conn     *DbConnection
@@ -18,53 +14,55 @@ func (user *User) NewUser(username, password string) {
 	user.password = password
 }
 
-func (user *User) UsernameExists() bool {
+func (user *User) UsernameExists() (bool, error) {
 	conn, err := user.conn.Connect()
+	var username string
 	if err != nil {
-		log.Fatal(err)
-		return true
+		return false, err
 	} else {
-		result, _ := conn.Query("select username from users where username = $1", user.username)
-		conn.Close()
-		if result.Next() {
-			return true
+		conn.QueryRow("select username from users where username = $1", user.username).Scan(&username)
+		defer conn.Close()
+		if username == user.username {
+			return true, nil
 		} else {
-			return false
-		}
-	}
-}
-func (user *User) Register() bool {
-	conn, err := user.conn.Connect()
-	if err != nil {
-		log.Fatal(err)
-		return false
-	} else {
-		isPresent := user.UsernameExists()
-		if isPresent == false {
-			_, err := conn.Query("insert into users(username, password) values($1, $2)", user.username, user.password)
-			conn.Close()
-			if err != nil {
-				return false
-			} else {
-				return true
-			}
-		} else {
-			return false
+			return false, nil
 		}
 	}
 }
 
-func (user *User) Login() bool {
+func (user *User) Register() (bool, error) {
 	conn, err := user.conn.Connect()
 	if err != nil {
-		log.Fatal(err)
-		return false
+		return false, err
 	} else {
-		result, _ := conn.Query("select (username, password) from users where username = $1 and password = $2", user.username, user.password)
-		if result.Next() {
-			return true
+		isPresent, err := user.UsernameExists()
+		if err != nil {
+			return false, err
+		} else if isPresent == false {
+			_, err := conn.Query("insert into users(username, password) values($1, $2)", user.username, user.password)
+			if err != nil {
+				return false, nil
+			} else {
+				return true, nil
+			}
 		} else {
-			return false
+			return false, nil
+		}
+	}
+}
+
+func (user *User) Login() (bool, error) {
+	conn, err := user.conn.Connect()
+	var username string
+	var password string
+	if err != nil {
+		return false, err
+	} else {
+		conn.QueryRow("select username, password from users where username = $1 and password = $2", user.username, user.password).Scan(&username, &password)
+		if username == user.username && password == user.password {
+			return true, nil
+		} else {
+			return false, nil
 		}
 	}
 }

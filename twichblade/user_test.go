@@ -7,59 +7,64 @@ import (
 )
 
 func TestRegister(t *testing.T) {
-	username := "praveen"
-	password := "password"
+	username := "foo"
+	password := "bar"
 	user := new(User)
-	result := user.Register()
-	assert.Equal(t, true, result)
 	user.NewUser(username, password)
+	result, err := user.Register()
+	assert.Equal(t, true, result)
+	assert.Equal(t, nil, err)
 	conn, _ := user.conn.Connect()
 	conn.Query("delete from users")
 }
 
 func TestUsernameDoesNotExists(t *testing.T) {
-	username := "praveen"
-	password := "password"
+	username := "foo"
+	password := "bar"
 	user := new(User)
 	user.NewUser(username, password)
-	result := user.UsernameExists()
+	result, err := user.UsernameExists()
 	assert.Equal(t, false, result)
+	assert.Equal(t, nil, err)
 }
 
-func TestusernameExists(t *testing.T) {
-	username := "praveen"
-	password := "password"
+func TestUsernameExists(t *testing.T) {
+	username := "foo4"
+	password := "bar4"
 	user := new(User)
 	user.NewUser(username, password)
 	conn, _ := user.conn.Connect()
-	conn.Query("insert into users (username, password) values($1, $2)", username, password)
-	result := user.UsernameExists()
+	conn.QueryRow("insert into users (username, password) values($1, $2)", username, password)
+	result, err := user.UsernameExists()
 	assert.Equal(t, true, result)
+	assert.Equal(t, nil, err)
 	conn.Query("delete from users")
 }
 
 func TestLoginForRegistredUser(t *testing.T) {
-	username := "praveen"
-	password := "password"
+	username := "foo1"
+	password := "bar1"
 	user := new(User)
 	user.NewUser(username, password)
 	conn, _ := user.conn.Connect()
-	conn.Query("insert into users(username, password) values($1, $2)", username, password)
-	result := user.Login()
+	conn.QueryRow("insert into users(username, password) values($1, $2)", username, password)
+	result, err := user.Login()
 	assert.Equal(t, true, result)
+	assert.Equal(t, nil, err)
 	conn.Query("delete from users")
 }
 
 func TestLoginForNonRegistredUser(t *testing.T) {
-	username := "praveen"
-	password := "password"
-	username1 := "praveen1"
-	password1 := "password1"
+	username := "foo"
+	password := "bar"
+	username1 := "foo1"
+	password1 := "bar1"
 	user := new(User)
 	user.NewUser(username, password)
 	conn, _ := user.conn.Connect()
 	conn.Query("insert into users(username, password) values($1, $2)", username1, password1)
-	result := user.Login()
+	result, err := user.Login()
 	assert.Equal(t, false, result)
+	assert.Equal(t, nil, err)
 	conn.Query("delete from users")
 }
